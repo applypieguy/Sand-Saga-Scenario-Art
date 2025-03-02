@@ -1,3 +1,4 @@
+//Copy and paste the code into the website
 const BrushDefs = window.SandGameJS.BrushDefs;
 const Brushes = window.SandGameJS.Brushes;
 const ToolDefs = window.SandGameJS.ToolDefs;
