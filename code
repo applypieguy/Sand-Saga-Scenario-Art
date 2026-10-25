@@ -1,134 +1,56 @@
-//Copy and paste the code into the website
 const BrushDefs = window.SandGameJS.BrushDefs;
 const Brushes = window.SandGameJS.Brushes;
 const ToolDefs = window.SandGameJS.ToolDefs;
 const Tools = window.SandGameJS.Tools;
 const Scenes = window.SandGameJS.Scenes;
 
-// Old Tools
-const mySandBrush = Brushes.colorRandomize(10, Brushes.color(229, 112, 24, BrushDefs.SAND));
-const mySandTool = Tools.roundBrushTool(mySandBrush, ToolDefs.DEFAULT_SIZE, ToolDefs.SAND.getInfo().derive({
-    badgeStyle: {
-        backgroundColor: 'rgb(229, 112, 24)',
-    }
+// --- Specialized Art Palettes ---
+// Vibrant Neon Canvas Materials
+const neonMagenta = Brushes.color(255, 0, 127, BrushDefs.SAND);
+const neonCyan = Brushes.color(0, 240, 255, BrushDefs.WATER);
+const neonGold = Brushes.color(255, 215, 0, BrushDefs.FIRE);
+const emeraldFlora = Brushes.color(0, 200, 115, BrushDefs.PLANT || BrushDefs.WALL);
+const deepViolet = Brushes.color(138, 43, 226, BrushDefs.SAND);
+
+// --- Sand Saga Native Structural Art Tools ---
+
+// 1. Rainbow Streamer (Uses the core SAND info config engine)
+const rainbowStreamerTool = Tools.roundBrushTool(neonMagenta, ToolDefs.DEFAULT_SIZE, ToolDefs.SAND.getInfo().derive({
+    badgeStyle: { backgroundColor: 'rgb(255, 0, 127)' }
 }));
 
-const fireBrush = Brushes.color(255, 100, 0, BrushDefs.FIRE); // Fire color
-const fireTool = Tools.roundBrushTool(fireBrush, ToolDefs.DEFAULT_SIZE, {
-    badgeStyle: { backgroundColor: 'rgb(255, 100, 0)' }, // Fire badge color
-    apply: function(sandGame, x, y) {
-        sandGame.setPixel(x, y, fireBrush); // Place fire on the clicked position
-    }
-});
+// 2. Neon Watercolor Bleed (Derives from the fluid WATER engine layout)
+const watercolorBleedTool = Tools.roundBrushTool(neonCyan, ToolDefs.DEFAULT_SIZE, ToolDefs.WATER.getInfo().derive({
+    badgeStyle: { backgroundColor: 'rgb(0, 240, 255)' }
+}));
 
-const waterBrush = Brushes.color(0, 0, 255, BrushDefs.WATER); // Water color
-const waterTool = Tools.roundBrushTool(waterBrush, ToolDefs.DEFAULT_SIZE, {
-    badgeStyle: { backgroundColor: 'rgb(0, 0, 255)' }, // Water badge color
-    apply: function(sandGame, x, y) {
-        sandGame.setPixel(x, y, waterBrush); // Place water on the clicked position
-    }
-});
+// 3. Fire-Art Painter (Sparks branching embers utilizing native FIRE mechanics)
+const fireArtTool = Tools.roundBrushTool(neonGold, ToolDefs.DEFAULT_SIZE, ToolDefs.FIRE.getInfo().derive({
+    badgeStyle: { backgroundColor: 'rgb(255, 215, 0)' }
+}));
 
-// New Tools
+// 4. Botanical Canvas Bloom (Grows structures dynamically over the workspace)
+// Uses PLANT if supported by the version configuration, falling back onto structural WALL
+const plantBaseInfo = ToolDefs.PLANT ? ToolDefs.PLANT.getInfo() : ToolDefs.WALL.getInfo();
+const botanicalArtTool = Tools.roundBrushTool(emeraldFlora, ToolDefs.DEFAULT_SIZE, plantBaseInfo.derive({
+    badgeStyle: { backgroundColor: 'rgb(0, 200, 115)' }
+}));
 
-// Lava Tool (Creates a lava effect, spreads like fire but more dangerous)
-const lavaBrush = Brushes.color(255, 69, 0, BrushDefs.LAVA); // Lava color (Red-Orange)
-const lavaTool = Tools.roundBrushTool(lavaBrush, ToolDefs.DEFAULT_SIZE, {
-    badgeStyle: { backgroundColor: 'rgb(255, 69, 0)' }, // Lava badge color (Red-Orange)
-    apply: function(sandGame, x, y) {
-        sandGame.setPixel(x, y, lavaBrush);  // Place lava on the clicked position
-        // Lava behavior: Spread to surrounding pixels
-        for (let dx = -1; dx <= 1; dx++) {
-            for (let dy = -1; dy <= 1; dy++) {
-                if (Math.random() < 0.2) {
-                    sandGame.setPixel(x + dx, y + dy, lavaBrush);  // Spread lava
-                }
-            }
-        }
-    }
-});
+// 5. Deep Canvas Shade (Heavy structural backgrounds)
+const heavyCanvasTool = Tools.roundBrushTool(deepViolet, ToolDefs.DEFAULT_SIZE, ToolDefs.WALL.getInfo().derive({
+    badgeStyle: { backgroundColor: 'rgb(138, 43, 226)' }
+}));
 
-// Wind Tool (Pushes sand and light materials in a direction)
-const windTool = Tools.roundBrushTool(BrushDefs.AIR, ToolDefs.DEFAULT_SIZE, {
-    badgeStyle: { backgroundColor: 'rgb(173, 216, 230)' }, // Light blue for wind
-    apply: function(sandGame, x, y) {
-        const materials = sandGame.getSurrounding(x, y, 5); // Get surrounding pixels
-        materials.forEach((material, index) => {
-            if (material !== null && material !== BrushDefs.WATER) {
-                sandGame.movePixel(x, y, x + Math.floor(Math.random() * 3) - 1, y + Math.floor(Math.random() * 3) - 1);  // Move material randomly
-            }
-        });
-    }
-});
-
-// Ice Pillar Tool (Creates pillars of ice)
-const icePillarBrush = Brushes.color(173, 216, 230, BrushDefs.ICE); // Light blue for ice
-const icePillarTool = Tools.roundBrushTool(icePillarBrush, ToolDefs.DEFAULT_SIZE, {
-    badgeStyle: { backgroundColor: 'rgb(173, 216, 230)' }, // Ice badge color (Light blue)
-    apply: function(sandGame, x, y) {
-        // Create a pillar of ice
-        let height = 5; // Pillar height
-        for (let i = 0; i < height; i++) {
-            sandGame.setPixel(x, y - i, icePillarBrush);  // Stack ice above the clicked position
-        }
-    }
-});
-
-// Electricity Tool (Sparks fire or spreads electrical energy)
-const electricityBrush = Brushes.color(255, 255, 0, BrushDefs.ELECTRICITY); // Yellow for electricity
-const electricityTool = Tools.roundBrushTool(electricityBrush, ToolDefs.DEFAULT_SIZE, {
-    badgeStyle: { backgroundColor: 'rgb(255, 255, 0)' }, // Electricity badge color (Yellow)
-    apply: function(sandGame, x, y) {
-        sandGame.setPixel(x, y, electricityBrush);  // Place electricity at clicked position
-        // Spread electricity to surrounding materials
-        for (let dx = -1; dx <= 1; dx++) {
-            for (let dy = -1; dy <= 1; dy++) {
-                if (sandGame.getPixel(x + dx, y + dy) === BrushDefs.FIRE) {
-                    sandGame.setPixel(x + dx, y + dy, BrushDefs.FIRE);  // Ignite fire nearby
-                }
-            }
-        }
-    }
-});
-
-// Plant Tool (Creates a growing plant)
-const plantBrush = Brushes.color(34, 139, 34, BrushDefs.PLANT); // Green for plants
-const plantTool = Tools.roundBrushTool(plantBrush, ToolDefs.DEFAULT_SIZE, {
-    badgeStyle: { backgroundColor: 'rgb(34, 139, 34)' }, // Plant badge color (Green)
-    apply: function(sandGame, x, y) {
-        sandGame.setPixel(x, y, plantBrush);  // Place plant on clicked position
-        // Plant growth simulation: Spread over time
-        for (let dx = -1; dx <= 1; dx++) {
-            for (let dy = -1; dy <= 1; dy++) {
-                if (Math.random() < 0.3 && sandGame.getPixel(x + dx, y + dy) === null) {
-                    sandGame.setPixel(x + dx, y + dy, plantBrush);  // Spread plant
-                }
-            }
-        }
-    }
-});
-
-// Sandquake Tool (Shakes the ground and moves sand particles)
-const sandquakeBrush = Brushes.color(255, 255, 255, BrushDefs.SAND); // White for sandquake effect
-const sandquakeTool = Tools.roundBrushTool(sandquakeBrush, ToolDefs.DEFAULT_SIZE, {
-    badgeStyle: { backgroundColor: 'rgb(255, 255, 255)' }, // Sandquake badge color (White)
-    apply: function(sandGame, x, y) {
-        // Simulate a tremor by randomly moving nearby sand particles
-        for (let dx = -3; dx <= 3; dx++) {
-            for (let dy = -3; dy <= 3; dy++) {
-                if (Math.random() < 0.4) {
-                    sandGame.movePixel(x + dx, y + dy, x + Math.floor(Math.random() * 3) - 1, y + Math.floor(Math.random() * 3) - 1);  // Shake sand
-                }
-            }
-        }
-    }
-});
-
-// Full Game Configuration with all Tools
+// --- Full Sandbox Configuration Setup ---
 return {
     scene: {
         init: function(sandGame) {
-            sandGame.graphics().drawRectangle(100, 100, 200, 120, Brushes.color(229, 112, 24, BrushDefs.SAND));  // Sample scene setup
+            // Generates a decorative multi-colored base pedestal line for painting surfaces
+            const frameColorA = Brushes.color(80, 50, 30, BrushDefs.WALL);
+            const frameColorB = Brushes.color(120, 80, 50, BrushDefs.WALL);
+            
+            sandGame.graphics().drawRectangle(20, 160, 360, 10, frameColorA);
+            sandGame.graphics().drawRectangle(40, 170, 320, 5, frameColorB);
         }
     },
     tools: [
@@ -137,19 +59,14 @@ return {
         ToolDefs.WALL,
         ToolDefs.FIRE,
         ToolDefs.ACID,
-        ToolDefs.METEOR,
         ToolDefs.WATER,
-        mySandTool,
-        fireTool,  // Fire Tool
-        waterTool,  // Water Tool
-        lavaTool,  // Lava Tool
-        windTool,  // Wind Tool
-        icePillarTool,  // Ice Pillar Tool
-        electricityTool,  // Electricity Tool
-        plantTool,  // Plant Tool
-        sandquakeTool  // Sandquake Tool
+        rainbowStreamerTool,   // Custom Magenta Sand Painter
+        watercolorBleedTool,   // Custom Fluid Cyan Mixer
+        fireArtTool,           // Custom Gold Fire Spreader
+        botanicalArtTool,      // Custom Emerald Plant Structure
+        heavyCanvasTool        // Custom Violet Solid Backdrop
     ],
-    disableSizeChange: true,
+    disableSizeChange: false, // Turned OFF so you can freely change brush scale for fine art details
     disableSettings: true,
     disableSceneSelection: true
 };
