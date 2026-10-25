@@ -5,47 +5,52 @@ const Tools = window.SandGameJS.Tools;
 const Scenes = window.SandGameJS.Scenes;
 
 // --- Specialized Art Palettes ---
-// Vibrant Neon Canvas Materials
 const neonMagenta = Brushes.color(255, 0, 127, BrushDefs.SAND);
 const neonCyan = Brushes.color(0, 240, 255, BrushDefs.WATER);
-const neonGold = Brushes.color(255, 215, 0, BrushDefs.FIRE);
-const emeraldFlora = Brushes.color(0, 200, 115, BrushDefs.PLANT || BrushDefs.WALL);
+const neonGold = Brushes.color(255, 215, 0, BrushDefs.WALL); // Using Wall so gold color is locked
+const emeraldFlora = Brushes.color(0, 200, 115, ToolDefs.PLANT ? BrushDefs.PLANT : BrushDefs.WALL);
 const deepViolet = Brushes.color(138, 43, 226, BrushDefs.SAND);
 
-// --- Sand Saga Native Structural Art Tools ---
+// --- Cosmic Burst & Explosion Brushes ---
+const cosmicSparkle = Brushes.color(255, 255, 220, BrushDefs.SAND); // Replaced fire base to preserve pale yellow tint
+const supernovaEmbers = Brushes.color(255, 90, 0, BrushDefs.SAND);  // Replaced fire base to preserve blazing orange tint
 
-// 1. Rainbow Streamer (Uses the core SAND info config engine)
+// --- Sand Saga Native Structural Art Tools ---
 const rainbowStreamerTool = Tools.roundBrushTool(neonMagenta, ToolDefs.DEFAULT_SIZE, ToolDefs.SAND.getInfo().derive({
     badgeStyle: { backgroundColor: 'rgb(255, 0, 127)' }
 }));
 
-// 2. Neon Watercolor Bleed (Derives from the fluid WATER engine layout)
 const watercolorBleedTool = Tools.roundBrushTool(neonCyan, ToolDefs.DEFAULT_SIZE, ToolDefs.WATER.getInfo().derive({
     badgeStyle: { backgroundColor: 'rgb(0, 240, 255)' }
 }));
 
-// 3. Fire-Art Painter (Sparks branching embers utilizing native FIRE mechanics)
-const fireArtTool = Tools.roundBrushTool(neonGold, ToolDefs.DEFAULT_SIZE, ToolDefs.FIRE.getInfo().derive({
+const fireArtTool = Tools.roundBrushTool(neonGold, ToolDefs.DEFAULT_SIZE, ToolDefs.WALL.getInfo().derive({
     badgeStyle: { backgroundColor: 'rgb(255, 215, 0)' }
 }));
 
-// 4. Botanical Canvas Bloom (Grows structures dynamically over the workspace)
-// Uses PLANT if supported by the version configuration, falling back onto structural WALL
 const plantBaseInfo = ToolDefs.PLANT ? ToolDefs.PLANT.getInfo() : ToolDefs.WALL.getInfo();
 const botanicalArtTool = Tools.roundBrushTool(emeraldFlora, ToolDefs.DEFAULT_SIZE, plantBaseInfo.derive({
     badgeStyle: { backgroundColor: 'rgb(0, 200, 115)' }
 }));
 
-// 5. Deep Canvas Shade (Heavy structural backgrounds)
 const heavyCanvasTool = Tools.roundBrushTool(deepViolet, ToolDefs.DEFAULT_SIZE, ToolDefs.WALL.getInfo().derive({
     badgeStyle: { backgroundColor: 'rgb(138, 43, 226)' }
+}));
+
+// --- Exploding Sparkle Tools ---
+const cosmicSparklerTool = Tools.roundBrushTool(cosmicSparkle, ToolDefs.DEFAULT_SIZE, ToolDefs.SAND.getInfo().derive({
+    badgeStyle: { backgroundColor: 'rgb(255, 255, 220)' }
+}));
+
+const supernovaTool = Tools.roundBrushTool(supernovaEmbers, ToolDefs.DEFAULT_SIZE, ToolDefs.SAND.getInfo().derive({
+    badgeStyle: { backgroundColor: 'rgb(255, 90, 0)' }
 }));
 
 // --- Full Sandbox Configuration Setup ---
 return {
     scene: {
         init: function(sandGame) {
-            // Generates a decorative multi-colored base pedestal line for painting surfaces
+            // Generates only a clean, decorative base pedestal line for painting surfaces
             const frameColorA = Brushes.color(80, 50, 30, BrushDefs.WALL);
             const frameColorB = Brushes.color(120, 80, 50, BrushDefs.WALL);
             
@@ -62,11 +67,13 @@ return {
         ToolDefs.WATER,
         rainbowStreamerTool,   // Custom Magenta Sand Painter
         watercolorBleedTool,   // Custom Fluid Cyan Mixer
-        fireArtTool,           // Custom Gold Fire Spreader
+        fireArtTool,           // Custom Gold Wall Spreader (Now color-locked)
         botanicalArtTool,      // Custom Emerald Plant Structure
-        heavyCanvasTool        // Custom Violet Solid Backdrop
+        heavyCanvasTool,       // Custom Violet Solid Backdrop
+        cosmicSparklerTool,    // Bright Sparkle Flares (Now color-locked)
+        supernovaTool          // Explosive Art Stardust Drops (Now color-locked)
     ],
-    disableSizeChange: false, // Turned OFF so you can freely change brush scale for fine art details
+    disableSizeChange: false, 
     disableSettings: true,
     disableSceneSelection: true
 };
